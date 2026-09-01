@@ -1,0 +1,26 @@
+public_file,classification,source_or_specification,license_action,migration_action,status
+src/allogate/models/gvp.py,new implementation with known lineage,https://arxiv.org/abs/2009.01411; https://github.com/drorlab/gvp-pytorch; https://github.com/chaitjo/geometric-gnn-dojo; https://github.com/jintuzhang/mlcolvar,retain citations and MIT-project notices,new implementation from stated mathematical constraints; no legacy file copied,reviewed
+src/allogate/geometry/residue_features.py,new implementation of documented geometry convention,https://doi.org/10.1126/science.add2187; https://github.com/dauparas/ProteinMPNN,retain citation and MIT-project notice,new validated NumPy implementation; coefficients made explicit,reviewed
+src/allogate/config/hashing.py,original generic utility,AlloGate public specification,Apache-2.0,new implementation,reviewed
+src/allogate/config/schemas.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed
+src/allogate/data/manifests.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed
+src/allogate/hierarchy/structural_units.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed
+src/allogate/hierarchy/mappings.py,original generic hierarchy utility,AlloGate public specification,Apache-2.0,new implementation with variable-size validated mappings,reviewed
+src/allogate/geometry/contacts.py,original generic geometry utility,standard Euclidean geometry and AlloGate public specification,Apache-2.0,new deterministic implementation,reviewed
+src/allogate/models/graph.py,original public tensor contract,AlloGate public specification,Apache-2.0,new implementation without legacy batch or checkpoint interfaces,reviewed
+src/allogate/models/aggregation.py,original intervention-safe tensor utility,AlloGate frozen no-renormalization contract,Apache-2.0,new indexed-add implementation supporting double backward,reviewed
+src/allogate/models/message_passing.py,new implementation with known GVP lineage,https://arxiv.org/abs/2009.01411; https://github.com/drorlab/gvp-pytorch; https://github.com/chaitjo/geometric-gnn-dojo; https://github.com/jintuzhang/mlcolvar,retain citations and MIT-project notices,new relation-oriented implementation; no legacy file copied,reviewed
+src/allogate/models/multiscale_encoder.py,original public composition of established GVP primitives,AlloGate public specification and GVP scientific definition,Apache-2.0 plus GVP provenance notice,new three-level generic implementation,reviewed
+src/allogate/models/readout.py,original public readout contract,AlloGate public specification,Apache-2.0,new Direct and zero-anchored relation Route implementation,reviewed
+src/allogate/models/model.py,original public composition root,AlloGate public specification,Apache-2.0,new implementation without legacy adapters,reviewed
+src/allogate/gates/identities.py,original public semantic identity schema,AlloGate public Gate contract,Apache-2.0,new hash-derived UID design without runtime indices or study defaults,reviewed
+src/allogate/gates/registry.py,original public Registry and layout,AlloGate public Gate contract,Apache-2.0,new standard-library implementation with derived deterministic layout,reviewed
+src/allogate/gates/provenance.py,original public provenance DAG,AlloGate public provenance contract,Apache-2.0,new standard-library DAG validation and closure implementation,reviewed
+src/allogate/gates/bindings.py,original runtime alignment layer,AlloGate public Gate contract,Apache-2.0,new semantic-UID to repeated-batch binding implementation,reviewed
+src/allogate/models/interventions.py,original public State Gate primitive,AlloGate frozen feature-baseline contract,Apache-2.0,new scalar replacement and vector closure implementation,reviewed
+src/allogate/kinetics/reference.py,original portable fixed-target contract,standard radial-basis interpolation and AlloGate public specification,Apache-2.0,new immutable NumPy/PyTorch implementation without legacy fitting or adapter code,reviewed
+src/allogate/evaluation/contracts.py,original evaluation identity schema,AlloGate public evaluation contract,Apache-2.0,new backend-independent dataclass implementation,reviewed
+src/allogate/evaluation/results.py,original immutable numerical result schema,AlloGate public evaluation contract,Apache-2.0,new read-only NumPy implementation,reviewed
+src/allogate/evaluation/service.py,original unified Gate differentiation service,PyTorch automatic differentiation and AlloGate public evaluation contract,Apache-2.0,new canonical-UID reverse-mode implementation without legacy evaluator code,reviewed
+src/allogate/evaluation/dose.py,original finite-intervention schedule,AlloGate public evaluation contract,Apache-2.0,new deterministic single-Gate implementation,reviewed
+src/allogate/artifacts/store.py,original content-addressed result utility,standard SHA-256 content-addressing pattern and AlloGate public specification,Apache-2.0,new path-free standard-library implementation,reviewed

@@ -1,0 +1,42 @@
+# Internal migration and provenance audit material
+.audit/
+
+# Local data and run state
+data/
+runs/
+outputs/
+artifacts/
+checkpoints/
+logs/
+cache/
+*.local.yaml
+.env
+
+# Molecular simulation and model binaries
+*.nc
+*.xtc
+*.dcd
+*.trr
+*.prmtop
+*.pt
+*.pth
+*.ckpt
+*.whl
+*.tar.gz
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+dist/
+build/
+
+# Notebook and scheduler output
+.ipynb_checkpoints/
+slurm-*.out
+

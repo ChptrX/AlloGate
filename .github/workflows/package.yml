@@ -1,0 +1,24 @@
+name: package-smoke
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  wheel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install ".[evaluation]"
+      - run: python -m pip wheel . --no-deps --wheel-dir dist
+      - run: python -m pip install --force-reinstall --no-deps dist/allogate-*.whl
+      - run: python examples/synthetic_gate_audit.py --artifact-root "${{ runner.temp }}/allogate-package-smoke"
+      - run: python tools/public_content_audit.py
