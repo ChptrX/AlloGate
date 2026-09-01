@@ -30,10 +30,11 @@ def _backbone_array(coordinates: ArrayLike) -> NDArray[np.floating]:
 def virtual_beta_carbon(backbone: ArrayLike) -> NDArray[np.floating]:
     """Construct virtual C-beta positions from N, C-alpha, and C coordinates.
 
-    The output is translation equivariant and rotation/reflection equivariant
-    for proper rotations when the cross-product orientation is preserved. The
-    coefficient convention matches the geometry used by ProteinMPNN; the code
-    here is a new array-oriented implementation with explicit validation.
+    The output is translation equivariant and equivariant under proper
+    rotations. Because the construction uses an oriented cross product,
+    reflection equivariance is not claimed. The coefficient convention matches
+    the geometry used by ProteinMPNN; the code here is a new array-oriented
+    implementation with explicit validation.
     """
 
     coordinates = _backbone_array(backbone)
@@ -100,4 +101,3 @@ def gaussian_radial_basis(
     spacing = centers[1] - centers[0]
     scaled = (values[..., None] - centers) / spacing
     return np.exp(-(scaled * scaled))
-

@@ -54,10 +54,17 @@ def fixed_edge_mean(
         raise ValueError("messages and target indices must align")
     if baseline_weight.shape != target.shape:
         raise ValueError("baseline_weight and target must align")
+    if not torch.isfinite(baseline_weight).all() or (baseline_weight < 0).any():
+        raise ValueError("baseline_weight must be finite and non-negative")
     controlled_weight = baseline_weight * _gate_or_ones(gate, baseline_weight)
     scalar_sum = _index_sum(scalar * controlled_weight.unsqueeze(-1), target, node_count)
     vector_sum = _index_sum(vector * controlled_weight[:, None, None], target, node_count)
-    denominator = _index_sum(baseline_weight, target, node_count).clamp_min(1.0)
+    baseline_denominator = _index_sum(baseline_weight, target, node_count)
+    denominator = torch.where(
+        baseline_denominator > 0,
+        baseline_denominator,
+        torch.ones_like(baseline_denominator),
+    )
     return scalar_sum / denominator[:, None], vector_sum / denominator[:, None, None]
 
 

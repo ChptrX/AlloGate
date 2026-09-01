@@ -16,6 +16,9 @@ from allogate.config.hashing import canonical_json
 
 _DIGEST = re.compile(r"^[0-9a-f]{64}$")
 _SEGMENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+_REF_SCHEMA = "allogate.artifact_ref.v1"
+_REF_KEYS = {"schema_version", "logical_name", "artifact"}
+_ARTIFACT_KEYS = {"digest", "logical_type", "media_type", "byte_count"}
 
 
 def _logical_parts(logical_name: str) -> tuple[str, ...]:
@@ -99,12 +102,14 @@ class ContentAddressedStore:
     def bind(self, logical_name: str, artifact: ArtifactRef) -> Path:
         parts = _logical_parts(logical_name)
         object_path = self._object_path(artifact.digest)
-        if not object_path.is_file() or sha256(object_path.read_bytes()).hexdigest() != artifact.digest:
+        if not object_path.is_file() or object_path.stat().st_size != artifact.byte_count:
+            raise RuntimeError("cannot bind a missing artifact or one with an invalid byte count")
+        if sha256(object_path.read_bytes()).hexdigest() != artifact.digest:
             raise RuntimeError("cannot bind a missing or corrupt artifact")
         destination = self.root / "refs" / Path(*parts).with_suffix(".json")
         payload = canonical_json(
             {
-                "schema_version": "allogate.artifact_ref.v1",
+                "schema_version": _REF_SCHEMA,
                 "logical_name": "/".join(parts),
                 "artifact": artifact.to_dict(),
             }
@@ -114,16 +119,35 @@ class ContentAddressedStore:
 
     def resolve(self, logical_name: str) -> tuple[ArtifactRef, Path]:
         parts = _logical_parts(logical_name)
+        normalized_name = "/".join(parts)
         ref_path = self.root / "refs" / Path(*parts).with_suffix(".json")
         payload = json.loads(ref_path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict) or set(payload) != _REF_KEYS:
+            raise ValueError("artifact reference has an invalid top-level structure")
+        if payload["schema_version"] != _REF_SCHEMA:
+            raise ValueError("artifact reference uses an unsupported schema version")
+        if payload["logical_name"] != normalized_name:
+            raise ValueError("artifact reference logical name does not match its binding")
         record = payload["artifact"]
+        if not isinstance(record, dict) or set(record) != _ARTIFACT_KEYS:
+            raise ValueError("artifact reference has an invalid artifact record")
+        if (
+            not isinstance(record["digest"], str)
+            or not isinstance(record["logical_type"], str)
+            or not isinstance(record["media_type"], str)
+            or isinstance(record["byte_count"], bool)
+            or not isinstance(record["byte_count"], int)
+        ):
+            raise ValueError("artifact reference metadata has invalid field types")
         artifact = ArtifactRef(
             digest=record["digest"],
             logical_type=record["logical_type"],
             media_type=record["media_type"],
-            byte_count=int(record["byte_count"]),
+            byte_count=record["byte_count"],
         )
         object_path = self._object_path(artifact.digest)
-        if not object_path.is_file() or sha256(object_path.read_bytes()).hexdigest() != artifact.digest:
+        if not object_path.is_file() or object_path.stat().st_size != artifact.byte_count:
+            raise RuntimeError("resolved artifact is missing or has an invalid byte count")
+        if sha256(object_path.read_bytes()).hexdigest() != artifact.digest:
             raise RuntimeError("resolved artifact is missing or corrupt")
         return artifact, object_path

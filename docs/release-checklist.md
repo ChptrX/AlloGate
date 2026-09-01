@@ -14,8 +14,9 @@
 - Run all unit tests and the synthetic end-to-end example.
 - Run `tools/public_content_audit.py` over the public tree.
 - Run the internal normalized-function and continuous-block similarity audit against the reviewed upstream snapshots.
-- Build both wheel and source distribution from a clean checkout and install the wheel into a fresh environment.
-- Verify that the wheel includes `LICENSE` and `THIRD_PARTY_NOTICES.md`.
+- Build both wheel and source distribution from a clean checkout and install each into a fresh environment.
+- Audit the wheel and source distribution without extraction; reject unsafe paths, unexpected payloads, and private content.
+- Verify that both release artifacts include `LICENSE` and `THIRD_PARTY_NOTICES.md`.
 
 ## GitHub gate
 

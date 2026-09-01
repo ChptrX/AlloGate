@@ -4,6 +4,8 @@
 [![Public content audit](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml)
 [![Package smoke test](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml)
 
+> **Status: evaluation-first alpha.** Slow-CV training and kinetic-reference fitting are not yet included.
+
 AlloGate is an open method for learning slow collective variables from molecular-dynamics trajectories and auditing how structural information affects a fixed kinetic target through differentiable gates.
 
 This repository is being rebuilt from a blank public tree. It contains only generic, provenance-reviewed components. It does not contain study-specific structures, trajectories, checkpoints, residue identities, server configuration, or legacy source bundles.

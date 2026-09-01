@@ -117,6 +117,26 @@ def test_fixed_denominator_does_not_renormalize_after_gate() -> None:
     torch.testing.assert_close(all_closed[0], torch.zeros(1, 1))
 
 
+@pytest.mark.parametrize("total_weight", [0.2, 0.7])
+def test_fixed_denominator_preserves_subunit_baseline_weight_sums(total_weight: float) -> None:
+    messages = (torch.tensor([[2.0], [4.0]]), torch.zeros(2, 0, 3))
+    target = torch.tensor([0, 0])
+    baseline = torch.tensor([0.25, 0.75]) * total_weight
+    all_open = fixed_edge_mean(messages, target, baseline, 2)
+    half_closed = fixed_edge_mean(messages, target, baseline, 2, torch.tensor([1.0, 0.0]))
+    torch.testing.assert_close(all_open[0], torch.tensor([[3.5], [0.0]]))
+    torch.testing.assert_close(half_closed[0], torch.tensor([[0.5], [0.0]]))
+    assert torch.isfinite(all_open[0]).all()
+
+
+def test_fixed_denominator_rejects_invalid_baseline_weights() -> None:
+    messages = (torch.tensor([[2.0]]), torch.zeros(1, 0, 3))
+    target = torch.tensor([0])
+    for baseline in (torch.tensor([-0.1]), torch.tensor([float("nan")])):
+        with pytest.raises(ValueError, match="finite and non-negative"):
+            fixed_edge_mean(messages, target, baseline, 1)
+
+
 def test_model_supports_variable_graph_sizes_and_is_rotation_invariant() -> None:
     graph, indices = synthetic_graph()
     model_instance = model()
@@ -165,4 +185,3 @@ def test_unit_state_replacement_does_not_change_relation_routes() -> None:
     for field in ("route_contact", "route_covalent", "route_combined"):
         torch.testing.assert_close(getattr(intervened, field), getattr(reference, field))
     assert not torch.allclose(intervened.direct, reference.direct)
-
