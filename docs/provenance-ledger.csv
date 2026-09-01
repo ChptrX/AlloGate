@@ -2,6 +2,7 @@ public_file,classification,source_or_specification,license_action,migration_acti
 src/allogate/models/gvp.py,new implementation with known lineage,https://arxiv.org/abs/2009.01411; https://github.com/drorlab/gvp-pytorch; https://github.com/chaitjo/geometric-gnn-dojo; https://github.com/jintuzhang/mlcolvar,retain citations and MIT-project notices,new implementation from stated mathematical constraints; no legacy file copied,reviewed
 src/allogate/geometry/residue_features.py,new implementation of documented geometry convention,https://doi.org/10.1126/science.add2187; https://github.com/dauparas/ProteinMPNN,retain citation and MIT-project notice,new validated NumPy implementation; coefficients made explicit,reviewed
 src/allogate/config/hashing.py,original generic utility,AlloGate public specification,Apache-2.0,new implementation,reviewed
+src/allogate/config/enums.py,original Python compatibility utility,Python standard-library Enum semantics and AlloGate public specification,Apache-2.0,new minimal Python 3.10 compatibility implementation,reviewed
 src/allogate/config/schemas.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed
 src/allogate/data/manifests.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed
 src/allogate/hierarchy/structural_units.py,original generic schema,AlloGate public specification,Apache-2.0,new implementation,reviewed

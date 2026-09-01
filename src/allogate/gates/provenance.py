@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from enum import StrEnum
 from typing import Iterable
+
+from allogate.config.enums import StrEnum
 
 from allogate.config.hashing import stable_digest
 
@@ -125,4 +126,3 @@ class ProvenanceDAG:
             missing = set(gate.provenance_nodes).difference(known)
             if missing:
                 raise ValueError(f"Gate {gate.uid} references unknown provenance nodes: {sorted(missing)}")
-

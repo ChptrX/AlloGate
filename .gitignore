@@ -2,13 +2,13 @@
 .audit/
 
 # Local data and run state
-data/
-runs/
-outputs/
-artifacts/
-checkpoints/
-logs/
-cache/
+/data/
+/runs/
+/outputs/
+/artifacts/
+/checkpoints/
+/logs/
+/cache/
 *.local.yaml
 .env
 
@@ -39,4 +39,3 @@ build/
 # Notebook and scheduler output
 .ipynb_checkpoints/
 slurm-*.out
-

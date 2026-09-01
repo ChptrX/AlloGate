@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import StrEnum
 import re
 
 from allogate.config.hashing import stable_digest
+from allogate.config.enums import StrEnum
 
 
 _TOKEN = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
