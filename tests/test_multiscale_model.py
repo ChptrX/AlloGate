@@ -8,6 +8,8 @@ from allogate.models.graph import (  # noqa: E402
     DirectedEdges,
     FeatureBaselines,
     GateControls,
+    InterfaceEdges,
+    InterfaceIncidence,
     MultiscaleGraph,
     ParentIndex,
 )
@@ -33,7 +35,10 @@ def edges(node_count: int, directed_pairs: list[tuple[int, int]], *, seed: int) 
     return DirectedEdges(source, target, (scalar, vector), torch.ones(count, dtype=DTYPE), node_count)
 
 
-def synthetic_graph() -> tuple[MultiscaleGraph, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+def synthetic_graph() -> tuple[
+    MultiscaleGraph,
+    tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor],
+]:
     generator = torch.Generator().manual_seed(3)
     residue_count = 10
     residue_features = (
@@ -42,19 +47,34 @@ def synthetic_graph() -> tuple[MultiscaleGraph, tuple[torch.Tensor, torch.Tensor
     )
     residue_pairs = [(0, 1), (1, 0), (1, 2), (2, 1), (4, 5), (5, 4), (7, 8), (8, 7)]
     local_pairs = [(0, 1), (1, 0), (2, 3), (3, 2), (3, 4), (4, 3)]
-    unit_pairs = [(0, 1), (1, 0), (2, 3), (3, 2)]
+    global_pairs = [(0, 1), (1, 0), (2, 3), (3, 2)]
+    interface_member_edges = edges(5, local_pairs, seed=6)
     graph = MultiscaleGraph(
         residue_features=residue_features,
         residue_edges=edges(residue_count, residue_pairs, seed=4),
-        residue_to_local=ParentIndex(torch.tensor([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]), 5),
-        local_edges=edges(5, local_pairs, seed=5),
-        local_to_unit=ParentIndex(torch.tensor([0, 1, 2, 2, 3]), 4),
-        unit_contact_edges=edges(4, unit_pairs, seed=6),
-        unit_covalent_edges=edges(4, unit_pairs, seed=7),
+        residue_to_local_unit=ParentIndex(
+            torch.tensor([0, 0, 1, 1, 2, 2, 3, 3, 4, 4]), 5
+        ),
+        local_unit_edges=edges(5, local_pairs, seed=5),
+        local_unit_to_global_unit=ParentIndex(torch.tensor([0, 1, 2, 2, 3]), 4),
+        interface_edges=InterfaceEdges(
+            interface_member_edges,
+            torch.tensor([0, 0, 1, 1, 1, 1]),
+            2,
+        ),
+        interface_to_global_unit=InterfaceIncidence(
+            interface_index=torch.tensor([0, 0, 1, 1]),
+            global_unit_index=torch.tensor([0, 1, 2, 3]),
+            baseline_weight=torch.ones(4, dtype=DTYPE),
+            interface_count=2,
+            global_unit_count=4,
+        ),
+        global_unit_covalent_edges=edges(4, global_pairs, seed=7),
     )
     graph_indices = (
         torch.tensor([0, 0, 0, 0, 1, 1, 1, 1, 1, 1]),
         torch.tensor([0, 0, 1, 1, 1]),
+        torch.tensor([0, 1]),
         torch.tensor([0, 0, 1, 1]),
     )
     return graph, graph_indices
@@ -86,21 +106,27 @@ def rotate_graph(graph: MultiscaleGraph, rotation: torch.Tensor) -> MultiscaleGr
     return MultiscaleGraph(
         residue_features=(residue_scalar, residue_vector @ rotation.T),
         residue_edges=rotate_edges(graph.residue_edges),
-        residue_to_local=graph.residue_to_local,
-        local_edges=rotate_edges(graph.local_edges),
-        local_to_unit=graph.local_to_unit,
-        unit_contact_edges=rotate_edges(graph.unit_contact_edges),
-        unit_covalent_edges=rotate_edges(graph.unit_covalent_edges),
+        residue_to_local_unit=graph.residue_to_local_unit,
+        local_unit_edges=rotate_edges(graph.local_unit_edges),
+        local_unit_to_global_unit=graph.local_unit_to_global_unit,
+        interface_edges=InterfaceEdges(
+            rotate_edges(graph.interface_edges.edges),
+            graph.interface_edges.edge_to_interface,
+            graph.interface_edges.interface_count,
+        ),
+        interface_to_global_unit=graph.interface_to_global_unit,
+        global_unit_covalent_edges=rotate_edges(graph.global_unit_covalent_edges),
     )
 
 
 def call(model_instance: AlloGateGeometryModel, graph: MultiscaleGraph, indices, gates=None, baselines=None):
-    residue_index, local_index, unit_index = indices
+    residue_index, local_index, interface_index, global_index = indices
     return model_instance(
         graph,
         residue_graph_index=residue_index,
-        local_graph_index=local_index,
-        unit_graph_index=unit_index,
+        local_unit_graph_index=local_index,
+        interface_graph_index=interface_index,
+        global_unit_graph_index=global_index,
         graph_count=2,
         gates=gates,
         baselines=baselines,
@@ -146,42 +172,51 @@ def test_model_supports_variable_graph_sizes_and_is_rotation_invariant() -> None
         rotation[:, 0] *= -1
     rotated = call(model_instance, rotate_graph(graph, rotation), indices)
     assert output.direct.shape == (2, 2)
-    for field in ("direct", "route_contact", "route_covalent", "route_combined"):
+    for field in ("direct", "route_interface", "route_covalent", "route_combined"):
         torch.testing.assert_close(getattr(rotated, field), getattr(output, field), atol=1.0e-10, rtol=1.0e-10)
 
 
-def test_closed_contact_relation_has_exactly_zero_route() -> None:
+def test_closed_interface_relation_has_exactly_zero_route() -> None:
     graph, indices = synthetic_graph()
     model_instance = model()
-    gate = torch.zeros(len(graph.unit_contact_edges.source), dtype=DTYPE)
-    output = call(model_instance, graph, indices, GateControls(unit_contact_edges=gate))
-    torch.testing.assert_close(output.route_contact, torch.zeros_like(output.route_contact), atol=0.0, rtol=0.0)
+    gate = torch.zeros(len(graph.interface_edges.edges.source), dtype=DTYPE)
+    output = call(model_instance, graph, indices, GateControls(interface_edges=gate))
+    torch.testing.assert_close(
+        output.route_interface,
+        torch.zeros_like(output.route_interface),
+        atol=0.0,
+        rtol=0.0,
+    )
     assert torch.count_nonzero(output.route_covalent) > 0
 
 
-def test_contact_gate_supports_second_derivatives() -> None:
+def test_interface_gate_supports_second_derivatives() -> None:
     graph, indices = synthetic_graph()
     model_instance = model()
     gate = torch.full(
-        (len(graph.unit_contact_edges.source),),
+        (len(graph.interface_edges.edges.source),),
         0.7,
         dtype=DTYPE,
         requires_grad=True,
     )
-    output = call(model_instance, graph, indices, GateControls(unit_contact_edges=gate))
-    first = torch.autograd.grad(output.route_contact.square().sum(), gate, create_graph=True)[0]
+    output = call(model_instance, graph, indices, GateControls(interface_edges=gate))
+    first = torch.autograd.grad(
+        output.route_interface.square().sum(), gate, create_graph=True
+    )[0]
     second = torch.autograd.grad(first.sum(), gate)[0]
     assert torch.isfinite(first).all()
     assert torch.isfinite(second).all()
 
 
-def test_unit_state_replacement_does_not_change_relation_routes() -> None:
+def test_global_unit_state_replacement_does_not_change_relation_routes() -> None:
     graph, indices = synthetic_graph()
     model_instance = model()
     reference = call(model_instance, graph, indices)
-    controls = GateControls(unit_state=torch.zeros(4, dtype=DTYPE))
-    baselines = FeatureBaselines(unit_scalar=torch.zeros(4, HIDDEN_DIMS.scalars, dtype=DTYPE))
+    controls = GateControls(global_unit_state=torch.zeros(4, dtype=DTYPE))
+    baselines = FeatureBaselines(
+        global_unit_scalar=torch.zeros(4, HIDDEN_DIMS.scalars, dtype=DTYPE)
+    )
     intervened = call(model_instance, graph, indices, controls, baselines)
-    for field in ("route_contact", "route_covalent", "route_combined"):
+    for field in ("route_interface", "route_covalent", "route_combined"):
         torch.testing.assert_close(getattr(intervened, field), getattr(reference, field))
     assert not torch.allclose(intervened.direct, reference.direct)

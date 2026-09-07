@@ -1,18 +1,18 @@
 cff-version: 1.2.0
 message: "If you use AlloGate, please cite the software release and the associated method paper."
-title: "AlloGate: auditable multiscale Gate interventions for molecular dynamics"
+title: "AlloGate: configurable slow collective variables and auditable multiscale Gate interventions"
 type: software
 authors:
   - family-names: "陈"
     given-names: "华章"
     orcid: "https://orcid.org/0009-0000-9668-1928"
-version: 0.1.0a2
+version: 0.2.0a1
 license: Apache-2.0
 repository-code: "https://github.com/ChptrX/AlloGate"
 abstract: >-
-  AlloGate is an open method for learning multiscale geometric representations
-  and auditing their influence on a fixed kinetic target through differentiable
-  State, Relay, and Contact Gates.
+  AlloGate is an open method for training protein-independent multiscale
+  geometric slow coordinates and auditing their influence on a fixed kinetic
+  target through differentiable State, Relay, and Contact Gates.
 keywords:
   - molecular dynamics
   - collective variables

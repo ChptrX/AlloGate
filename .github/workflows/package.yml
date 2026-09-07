@@ -28,10 +28,12 @@ jobs:
           python -m venv --system-site-packages "${{ runner.temp }}/allogate-wheel"
           "${{ runner.temp }}/allogate-wheel/bin/python" -m pip install --no-deps dist/*.whl
           "${{ runner.temp }}/allogate-wheel/bin/python" -c "import allogate, allogate.data, allogate.artifacts"
+          "${{ runner.temp }}/allogate-wheel/bin/python" examples/synthetic_training.py --output "${{ runner.temp }}/wheel-training"
           "${{ runner.temp }}/allogate-wheel/bin/python" examples/synthetic_gate_audit.py --artifact-root "${{ runner.temp }}/wheel-output"
       - name: Smoke-test sdist in a clean code environment
         run: |
           python -m venv --system-site-packages "${{ runner.temp }}/allogate-sdist"
           "${{ runner.temp }}/allogate-sdist/bin/python" -m pip install --no-deps --no-build-isolation dist/*.tar.gz
           "${{ runner.temp }}/allogate-sdist/bin/python" -c "import allogate, allogate.data, allogate.artifacts"
+          "${{ runner.temp }}/allogate-sdist/bin/python" examples/synthetic_training.py --output "${{ runner.temp }}/sdist-training"
           "${{ runner.temp }}/allogate-sdist/bin/python" examples/synthetic_gate_audit.py --artifact-root "${{ runner.temp }}/sdist-output"

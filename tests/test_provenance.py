@@ -9,8 +9,12 @@ def graph_objects():
     residue_a = EntityRef("example", EntityLevel.RESIDUE, "residue-a-0001")
     residue_b = EntityRef("example", EntityLevel.RESIDUE, "residue-a-0002")
     contact = EntityRef("example", EntityLevel.CONTACT, "contact-0001-0002")
-    local = EntityRef("example", EntityLevel.LOCAL_ELEMENT, "local-0001")
-    unit = EntityRef("example", EntityLevel.STRUCTURAL_UNIT, "unit-0001")
+    local = EntityRef(
+        "example", EntityLevel.LOCAL_STRUCTURAL_UNIT, "local-unit-0001"
+    )
+    unit = EntityRef(
+        "example", EntityLevel.GLOBAL_STRUCTURAL_UNIT, "global-unit-0001"
+    )
     readout = EntityRef("example", EntityLevel.READOUT, "route-contact")
     nodes = (residue_a, residue_b, contact, local, unit, readout)
     edges = (
@@ -61,8 +65,7 @@ def test_registry_references_must_exist_in_provenance() -> None:
     )
     dag.validate_registry(registry)
     missing = GateSpec.relay(
-        EntityRef("example", EntityLevel.LOCAL_ELEMENT, "missing"),
+        EntityRef("example", EntityLevel.LOCAL_STRUCTURAL_UNIT, "missing"),
     )
     with pytest.raises(ValueError, match="unknown provenance"):
         dag.validate_registry(GateRegistry.from_specs("example", (missing,)))
-

@@ -10,4 +10,9 @@
 
 Its semantic digest covers every scientific array and parameter. It does not contain training paths, topology identifiers, checkpoints, host information, or runtime devices.
 
-The same reference can be evaluated with NumPy or with differentiable float64 PyTorch arithmetic. Saving and loading verifies the semantic digest. Construction of the reference—feature selection, slow-coordinate training, state discretization, boundary choice, and kinetic validation—remains a separate, method-declared workflow so that a fitted target cannot be confused with Gate evaluation.
+The same reference can be evaluated with NumPy or with differentiable float64
+PyTorch arithmetic. Saving and loading verifies the semantic digest. The public
+trainer now constructs slow coordinates, but state discretization, boundary
+choice, reference fitting, and kinetic validation remain a separate,
+method-declared workflow so that a fitted target cannot be confused with model
+training or Gate evaluation.

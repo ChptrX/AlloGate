@@ -12,6 +12,8 @@
 - Start from the blank-history `main` branch; do not import legacy Git history.
 - Confirm that `.audit/`, archives, wheels, binary trajectories, checkpoints, and build products are ignored.
 - Run all unit tests and the synthetic end-to-end example.
+- Run the deterministic synthetic training example twice and compare its
+  experiment, initial-model, run, and trained-model digests.
 - Run `tools/public_content_audit.py` over the public tree.
 - Run the internal normalized-function and continuous-block similarity audit against the reviewed upstream snapshots.
 - Build both wheel and source distribution from a clean checkout and install each into a fresh environment.
@@ -23,7 +25,9 @@
 - Require the test, package-smoke, and public-content workflows on pull requests.
 - Enable private security advisories and secret scanning where available.
 - Protect `main` from force pushes and require review for release changes.
-- Create the first release as a pre-release until the public training and kinetic-reference fitting workflows are complete.
+- Keep the release as a pre-release until raw trajectory adapters,
+  kinetic-reference fitting, and empirical cross-protein qualification are
+  complete.
 
 ## Paper-code gate
 

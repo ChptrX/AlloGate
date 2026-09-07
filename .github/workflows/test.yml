@@ -22,4 +22,5 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install ".[test]"
       - run: python -m pytest
+      - run: python examples/synthetic_training.py --output "${{ runner.temp }}/synthetic-training"
       - run: python examples/synthetic_gate_audit.py

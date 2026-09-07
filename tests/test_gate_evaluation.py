@@ -13,7 +13,9 @@ from allogate.gates import EntityLevel, EntityRef, GateRegistry, GateSpec
 def registry() -> GateRegistry:
     residue_a = EntityRef("example", EntityLevel.RESIDUE, "residue-0000")
     residue_b = EntityRef("example", EntityLevel.RESIDUE, "residue-0001")
-    local = EntityRef("example", EntityLevel.LOCAL_ELEMENT, "local-0000")
+    local = EntityRef(
+        "example", EntityLevel.LOCAL_STRUCTURAL_UNIT, "local-unit-0000"
+    )
     contact = EntityRef("example", EntityLevel.CONTACT, "contact-0000-0001")
     return GateRegistry.from_specs(
         "example",

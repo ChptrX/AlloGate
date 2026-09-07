@@ -29,6 +29,25 @@ The coefficient convention used by `virtual_beta_carbon` is compatible with the 
 
 AlloGate contains a newly written NumPy implementation with validation and explicit named constants. This notice preserves the known formula/source provenance.
 
+## Descriptor-free collective variables and slow-mode training
+
+The public model/training composition follows the descriptor-free geometric-GNN
+CV workflow and DeepTICA-style objective described in:
+
+- Jintu Zhang, Luigi Bonati, Enrico Trizio, Odin Zhang, Yu Kang, TingJun Hou,
+  and Michele Parrinello. “Descriptor-Free Collective Variables from Geometric
+  Graph Neural Networks.” *Journal of Chemical Theory and Computation* 20,
+  10787-10797 (2024). DOI:
+  <https://doi.org/10.1021/acs.jctc.4c01197>.
+- Luigi Bonati, Giovanni Maria Piccini, and Michele Parrinello. “Deep learning
+  the slow modes for rare events sampling.” *PNAS* 118, e2113533118 (2021).
+  DOI: <https://doi.org/10.1073/pnas.2113533118>.
+
+AlloGate's public objective is a newly written PyTorch implementation of the
+published covariance/VAMP-2 equations integrated with AlloGate's explicit
+interface hierarchy and fixed-denominator intervention contract. No source file
+from the authors' workflow repositories is copied into this package.
+
 ## Optional validation software
 
 Future AlloGate releases may offer deeptime as an optional, separately installed reference backend. deeptime is not copied or bundled here:
@@ -39,4 +58,3 @@ PyEMMA and MSMBuilder may be cited in method documentation as historical softwar
 
 - PyEMMA: <https://github.com/markovmodel/PyEMMA> — LGPL-3.0.
 - MSMBuilder: <https://github.com/msmbuilder/msmbuilder> — LGPL-2.1.
-

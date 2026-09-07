@@ -57,36 +57,36 @@ def _balanced_sizes(length: int, *, target: int, minimum: int, maximum: int) -> 
     quotient, remainder = divmod(length, segment_count)
     sizes = [quotient + (index < remainder) for index in range(segment_count)]
     if min(sizes) < minimum or max(sizes) > maximum:
-        raise RuntimeError("internal local-element partitioning error")
+        raise RuntimeError("internal local-structural-unit partitioning error")
     return sizes
 
 
-def build_contiguous_local_elements(
+def build_contiguous_local_structural_units(
     chain_index: ArrayLike,
-    structural_unit_index: ArrayLike,
+    global_structural_unit_index: ArrayLike,
     *,
     target_size: int = 6,
     minimum_size: int = 4,
     maximum_size: int = 8,
 ) -> tuple[IndexMapping, IndexMapping]:
-    """Partition ordered residues without crossing chain or structural-unit boundaries.
+    """Partition ordered residues without crossing chain or global-unit boundaries.
 
-    Returns residue-to-local-element and local-element-to-structural-unit mappings.
-    Structural-unit indices must be contiguous integers starting at zero.
+    Returns residue-to-local-unit and local-unit-to-global-unit mappings.
+    Global-unit indices must be contiguous integers starting at zero.
     """
 
     chains = np.asarray(chain_index)
-    units = np.asarray(structural_unit_index, dtype=np.int64)
+    units = np.asarray(global_structural_unit_index, dtype=np.int64)
     if chains.ndim != 1 or units.ndim != 1 or len(chains) != len(units) or len(units) == 0:
         raise ValueError("chain and structural-unit indices must be aligned non-empty vectors")
     if target_size < 1 or minimum_size < 1 or not minimum_size <= target_size <= maximum_size:
         raise ValueError("sizes must satisfy 1 <= minimum <= target <= maximum")
     unique_units = set(int(value) for value in np.unique(units))
     if units.min() != 0 or unique_units != set(range(int(units.max()) + 1)):
-        raise ValueError("structural-unit indices must be contiguous integers starting at zero")
+        raise ValueError("global structural unit indices must be contiguous integers starting at zero")
 
-    residue_to_local = np.empty(len(units), dtype=np.int64)
-    local_to_unit: list[int] = []
+    residue_to_local_unit = np.empty(len(units), dtype=np.int64)
+    local_unit_to_global_unit: list[int] = []
     local_index = 0
     run_start = 0
     for position in range(1, len(units) + 1):
@@ -102,14 +102,19 @@ def build_contiguous_local_elements(
             minimum=minimum_size,
             maximum=maximum_size,
         ):
-            residue_to_local[cursor : cursor + size] = local_index
-            local_to_unit.append(int(units[run_start]))
+            residue_to_local_unit[cursor : cursor + size] = local_index
+            local_unit_to_global_unit.append(int(units[run_start]))
             cursor += size
             local_index += 1
         run_start = position
 
-    residue_mapping = IndexMapping(residue_to_local, local_index)
+    residue_mapping = IndexMapping(residue_to_local_unit, local_index)
     unit_count = int(units.max()) + 1
-    local_mapping = IndexMapping(np.asarray(local_to_unit, dtype=np.int64), unit_count)
+    local_mapping = IndexMapping(
+        np.asarray(local_unit_to_global_unit, dtype=np.int64), unit_count
+    )
     return residue_mapping, local_mapping
 
+
+# Source compatibility for the evaluation-first 0.1 alpha.
+build_contiguous_local_elements = build_contiguous_local_structural_units

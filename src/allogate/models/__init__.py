@@ -1,6 +1,14 @@
 """Neural components requiring the optional PyTorch backend."""
 
-from .graph import DirectedEdges, FeatureBaselines, GateControls, MultiscaleGraph, ParentIndex
+from .graph import (
+    DirectedEdges,
+    FeatureBaselines,
+    GateControls,
+    InterfaceEdges,
+    InterfaceIncidence,
+    MultiscaleGraph,
+    ParentIndex,
+)
 from .gvp import ChannelDimensions, GeometricVectorPerceptron
 from .model import AlloGateGeometryModel
 from .multiscale_encoder import EncoderOutput, MultiscaleEncoder
@@ -14,6 +22,8 @@ __all__ = [
     "FeatureBaselines",
     "GateControls",
     "GeometricVectorPerceptron",
+    "InterfaceEdges",
+    "InterfaceIncidence",
     "MultiscaleEncoder",
     "MultiscaleGraph",
     "MultiscaleReadout",

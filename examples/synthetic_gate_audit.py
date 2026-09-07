@@ -25,7 +25,9 @@ from allogate.kinetics import KineticReference
 def _registry() -> GateRegistry:
     residue_a = EntityRef("synthetic", EntityLevel.RESIDUE, "chain-a-residue-0001")
     residue_b = EntityRef("synthetic", EntityLevel.RESIDUE, "chain-a-residue-0002")
-    local = EntityRef("synthetic", EntityLevel.LOCAL_ELEMENT, "local-0001")
+    local = EntityRef(
+        "synthetic", EntityLevel.LOCAL_STRUCTURAL_UNIT, "local-unit-0001"
+    )
     contact = EntityRef("synthetic", EntityLevel.CONTACT, "contact-0001-0002")
     return GateRegistry.from_specs(
         "synthetic",

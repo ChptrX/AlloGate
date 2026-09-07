@@ -16,6 +16,7 @@ All public contributions must preserve the repository's clean-room and provenanc
 python -m pip install -e ".[test]"
 python -m pytest
 python tools/public_content_audit.py
+python examples/synthetic_training.py --output /temporary/path
 python examples/synthetic_gate_audit.py
 ```
 

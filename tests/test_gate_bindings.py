@@ -13,7 +13,12 @@ def registry_and_gates():
         EntityRef("example", EntityLevel.RESIDUE, f"residue-{index:04d}") for index in range(2)
     )
     locals_ = tuple(
-        EntityRef("example", EntityLevel.LOCAL_ELEMENT, f"local-{index:04d}") for index in range(2)
+        EntityRef(
+            "example",
+            EntityLevel.LOCAL_STRUCTURAL_UNIT,
+            f"local-{index:04d}",
+        )
+        for index in range(2)
     )
     contact_entity = EntityRef("example", EntityLevel.CONTACT, "contact-0000-0001")
     state = tuple(GateSpec.state(item) for item in residues)
@@ -29,7 +34,12 @@ def test_runtime_binding_repeats_semantic_uids_across_graphs() -> None:
         registry,
         {
             "residue_state": (state[0].uid, state[1].uid, state[0].uid, state[1].uid),
-            "local_to_unit": (relay[0].uid, relay[1].uid, relay[0].uid, relay[1].uid),
+            "local_unit_to_global_unit": (
+                relay[0].uid,
+                relay[1].uid,
+                relay[0].uid,
+                relay[1].uid,
+            ),
             "residue_edges": (contact.uid, contact.uid),
         },
     )

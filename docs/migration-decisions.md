@@ -95,3 +95,37 @@ Still deferred after the fourth batch:
 - calibrated State feature-baseline estimation;
 - multi-Gate design, uncertainty analysis, public examples, and complete evidence-bundle export;
 - every legacy compatibility adapter, production configuration, scheduler helper, and study-specific asset.
+
+## Fifth whitelist
+
+Approved in the trainable public alpha:
+
+- the explicit residue -> local structural unit -> interface -> global
+  structural unit tensor contract;
+- stable interface identities, grouped local-unit contact messages, and
+  two-endpoint interface incidence;
+- zero-preserving interface states and Interface Route readout;
+- variable-size batch collation across proteins and conformations;
+- deterministic within-trajectory lag-pair manifests;
+- strict path-free JSON/YAML experiment configuration;
+- a differentiable float64 VAMP-2 objective with configurable Direct,
+  Interface Route, alignment, variance, decorrelation, and
+  trajectory-centered terms;
+- a seeded model factory, deterministic optimizer loop, validation-based
+  stopping, and immutable run/checkpoint/history artifacts;
+- a complete synthetic training workflow.
+
+No legacy trainer, sampler, data repository, trajectory reader, configuration
+model, or hierarchy implementation was copied. The public training modules were
+written against the published VAMP/DeepTICA equations and the public tensor
+contracts in this repository. The protein-specific constants and operational
+assumptions found during the legacy audit were deliberately excluded.
+
+Still separate after the fifth batch:
+
+- raw PDB/topology/trajectory-format adapters;
+- State feature-baseline estimation;
+- state discretization, transition-model estimation, boundary selection, and
+  kinetic-reference fitting;
+- distributed multi-GPU training and scheduler integration;
+- multi-seed/fold experiment orchestration.

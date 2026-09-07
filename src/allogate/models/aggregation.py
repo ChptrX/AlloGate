@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor
 
-from .graph import ParentIndex
+from .graph import InterfaceIncidence, ParentIndex
 from .gvp import ScalarVector
 
 
@@ -98,3 +98,26 @@ def fixed_graph_mean(
 
     mapping = ParentIndex(graph_index, graph_count)
     return fixed_parent_mean(items, mapping, gate)
+
+
+def fixed_interface_mean(
+    interfaces: ScalarVector,
+    incidence: InterfaceIncidence,
+    gate: Tensor | None = None,
+) -> ScalarVector:
+    """Relay explicit interface states to both global-unit endpoints."""
+
+    scalar, vector = interfaces
+    if scalar.shape[0] != incidence.interface_count or vector.shape[0] != incidence.interface_count:
+        raise ValueError("interface features do not match the incidence definition")
+    repeated = (
+        scalar.index_select(0, incidence.interface_index),
+        vector.index_select(0, incidence.interface_index),
+    )
+    return fixed_edge_mean(
+        repeated,
+        incidence.global_unit_index,
+        incidence.baseline_weight,
+        incidence.global_unit_count,
+        gate,
+    )

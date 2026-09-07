@@ -15,11 +15,15 @@ _TOKEN = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 class EntityLevel(StrEnum):
     RESIDUE = "residue"
     CONTACT = "contact"
-    LOCAL_ELEMENT = "local_element"
+    LOCAL_STRUCTURAL_UNIT = "local_structural_unit"
     INTERFACE = "interface"
-    STRUCTURAL_UNIT = "structural_unit"
+    GLOBAL_STRUCTURAL_UNIT = "global_structural_unit"
     RELATION = "relation"
     READOUT = "readout"
+
+    # Source-compatible names from the evaluation-first 0.1 alpha.
+    LOCAL_ELEMENT = "local_structural_unit"
+    STRUCTURAL_UNIT = "global_structural_unit"
 
 
 class GateFamily(StrEnum):

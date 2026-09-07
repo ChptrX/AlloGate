@@ -4,69 +4,132 @@
 [![Public content audit](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml)
 [![Package smoke test](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml)
 
-> **Status: evaluation-first alpha.** Slow-CV training and kinetic-reference fitting are not yet included.
+> **Status: trainable public alpha.** The protein-independent model, configurable
+> slow-CV training objective, Gate evaluation layer, and synthetic reference
+> workflows are implemented. Raw trajectory readers and kinetic-reference fitting
+> remain separate adapters/workflows.
 
-AlloGate is an open method for learning slow collective variables from molecular-dynamics trajectories and auditing how structural information affects a fixed kinetic target through differentiable gates.
+AlloGate learns descriptor-free slow collective variables from molecular-dynamics
+graphs and audits how structural information influences a frozen kinetic target.
+The public package contains no protein-specific residue ranges, trajectory paths,
+checkpoints, or server assumptions.
 
-This repository is being rebuilt from a blank public tree. It contains only generic, provenance-reviewed components. It does not contain study-specific structures, trajectories, checkpoints, residue identities, server configuration, or legacy source bundles.
+## Protein-independent hierarchy
 
-## Current public milestone
-
-Version `0.1.0a2` now contains four provenance-reviewed migration batches:
-
-- scalar/vector geometric operations and a paper-specified geometric vector perceptron;
-- virtual-beta-carbon and generic distance features;
-- relative-path trajectory manifests;
-- generic, non-overlapping structural-unit definitions and deterministic method hashing.
-- variable-size graph and hierarchy tensor contracts;
-- deterministic contact geometry and smooth baseline edge weights;
-- fixed-denominator, relation-aware equivariant message passing;
-- residue → local-element → structural-unit encoding;
-- invariant Direct readout and zero-preserving Contact/Covalent Route readouts.
-- canonical State, Relay, and Contact Gate definitions;
-- deterministic global Gate tensor layouts and runtime bindings;
-- scalar-baseline State replacement at frozen insertion points;
-- an explicit acyclic provenance graph connecting structural entities and readouts.
-- a path-free, immutable kinetic-reference format with NumPy/PyTorch evaluation;
-- one identity-checked Gate evaluation service for finite responses, Jacobians, and named Hessian blocks;
-- immutable all-one `q0` capture with explicit drift replay;
-- deterministic single-Gate dose schedules and a content-addressed result store.
-
-Training and kinetic-reference construction are not yet part of these migration batches. The public evaluation layer consumes an already-frozen model and target; it does not infer or refit either one.
-
-## Installation for development
+The model uses explicit, variable-size mappings:
 
 ```text
-python -m pip install -e ".[test]"
+residues
+   |
+   v
+local structural units ---- contact groups ----> interfaces
+   |                                             |
+   +---------------------+-----------------------+
+                         v
+               global structural units
+                         |
+                         v
+              Direct and Route CVs
+```
+
+- **Local structural units** are short, configurable residue groups that never
+  cross a chain or global-unit boundary.
+- **Interfaces** aggregate contact messages between local units and connect
+  exactly two global structural units. Inactive interfaces remain exact zeros.
+- **Global structural units** are investigator-declared, non-overlapping residue
+  groups such as domains, subdomains, chains, or functional regions.
+
+Counts are inferred from each batch. The model has no fixed number of residues,
+local units, interfaces, global units, replicas, trajectories, GPUs, or CVs.
+
+## Installation
+
+```text
+python -m pip install -e ".[training,test]"
 python -m pytest
 ```
 
-The GNN component requires PyTorch and can be installed separately with `.[gnn]`.
-The differentiable evaluation service can be installed without the GNN modules using `.[evaluation]`.
+PyTorch is optional for the configuration, manifest, Registry, and artifact
+modules. Install `.[training]`, `.[gnn]`, or `.[evaluation]` for the corresponding
+neural functionality.
 
-## Synthetic end-to-end example
+## Configurable training
 
-The public example uses deterministic synthetic CV coordinates and no molecular or study data:
+Every model, objective, and optimizer parameter is represented in a strict,
+path-free experiment configuration. Start from
+`examples/configs/protein_training.yaml` and change the hierarchy, channel
+dimensions, lag, loss weights, optimizer, batch size, stopping policy, or dtype.
+Unknown keys fail rather than being silently ignored.
+
+The training API accepts lagged, variable-size graph batches, so trajectory
+reading can be supplied by MDAnalysis, MDTraj, an existing preprocessing
+pipeline, or another explicit adapter:
+
+```python
+from allogate.config import load_experiment_config
+from allogate.models import AlloGateGeometryModel
+from allogate.training import SlowCVTrainer
+
+config = load_experiment_config("experiment.yaml")
+model = AlloGateGeometryModel.from_experiment_config(config)
+trainer = SlowCVTrainer(model, config, device="cuda")
+result = trainer.fit(train_loader, validation_loader, output_directory="run")
+```
+
+`train_loader` and `validation_loader` yield `LaggedBatch` objects. Use
+`collate_lagged_batches` as a PyTorch `DataLoader` collation function. See
+`docs/training.md` and `docs/data-contract.md` for the complete contract and
+leakage-safe split guidance.
+
+Run the deterministic synthetic training workflow:
+
+```text
+python examples/synthetic_training.py --output synthetic-training-run
+```
+
+The run writes an immutable best checkpoint, epoch history, and a path-free run
+manifest binding the experiment, initial model, and trained model digests.
+
+## Gate evaluation
+
+The public evaluation layer provides canonical State, Relay, and Contact Gate
+identities; fixed-denominator interventions; exact Jacobians and named Hessian
+blocks; deterministic dose schedules; and content-addressed results.
 
 ```text
 python examples/synthetic_gate_audit.py
 ```
 
-It constructs State, Relay, and Contact Gate identities; captures one immutable all-one target; computes the full Jacobian and one named Hessian block; and evaluates a finite Relay-Gate dose schedule. See `examples/README.md` for optional content-addressed output.
+Closing a Gate removes model information without renormalizing surviving
+neighbors. A Gate response measures dependence inside the trained model; it is
+not equivalent to a physical mutation and does not by itself establish molecular
+causality.
 
-## Scientific and source provenance
+## Scientific basis and reproducibility
 
-The GVP implementation follows the mathematical construction introduced by Jing et al., *Learning from Protein Structure with Geometric Vector Perceptrons* (ICLR 2021). The source was newly organized for AlloGate, while known open implementations that informed the project's earlier development remain credited in `THIRD_PARTY_NOTICES.md`.
+The geometric encoder follows the scalar/vector constraints of geometric vector
+perceptrons. Descriptor-free GNN collective variables and the DeepTICA-style
+slow-mode objective follow the public methodology described by Zhang et al.,
+*J. Chem. Theory Comput.* 20, 10787-10797 (2024),
+<https://doi.org/10.1021/acs.jctc.4c01197>.
 
-Virtual-beta-carbon reconstruction is a documented geometry convention compatible with ProteinMPNN-style backbone features. Its constants and provenance are explicit in the API documentation and third-party notice.
+For a shareable result, retain:
 
-See `docs/provenance-ledger.csv` for the per-file migration decision.
+- the trajectory and lag-pair manifests;
+- the experiment configuration and its digest;
+- initial and trained model digests;
+- the split policy and random seed;
+- the Gate Registry, layout, kinetic-reference, and no-intervention digests;
+- software version, environment lock file, and raw-data checksums.
 
-The public message-passing contract is documented in `docs/model-contracts.md`.
-Gate identity and provenance contracts are documented in `docs/gate-registry.md`.
-Evaluation and fixed-target contracts are documented in `docs/evaluation-contract.md` and `docs/kinetic-reference.md`.
-The release and paper-code checks are listed in `docs/release-checklist.md`.
+Implementation lineage is recorded in `THIRD_PARTY_NOTICES.md` and
+`docs/provenance-ledger.csv`. Release and paper-code checks are listed in
+`docs/release-checklist.md`; user-visible API changes are recorded in
+`CHANGELOG.md`.
 
-## Scope boundary
+## Public-data boundary
 
-AlloGate gates measure model-internal dependence on structural information. A closed gate is not equivalent to a physical mutation and does not by itself establish molecular causality.
+This repository intentionally excludes study structures, trajectories,
+checkpoints, absolute host paths, scheduler configuration, legacy source
+bundles, and unpublished residue identities. Only synthetic or explicitly
+redistributable examples should be committed.

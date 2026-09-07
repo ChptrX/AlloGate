@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "allogate"
-version = "0.1.0a2"
-description = "Multiscale geometric learning and auditable gate interventions for molecular dynamics"
+version = "0.2.0a1"
+description = "Configurable multiscale geometric learning and auditable gate interventions for proteins"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
@@ -21,7 +21,8 @@ Issues = "https://github.com/ChptrX/AlloGate/issues"
 [project.optional-dependencies]
 evaluation = ["torch>=2.2"]
 gnn = ["torch>=2.2"]
-test = ["pytest>=8", "torch>=2.2"]
+training = ["torch>=2.2", "PyYAML>=6.0"]
+test = ["pytest>=8", "torch>=2.2", "PyYAML>=6.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

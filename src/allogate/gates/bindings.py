@@ -16,16 +16,26 @@ from .registry import GateRegistry
 
 _CONTROL_CONTRACT: dict[str, tuple[GateFamily, EntityLevel, EntityLevel | None]] = {
     "residue_state": (GateFamily.STATE, EntityLevel.RESIDUE, None),
-    "local_state": (GateFamily.STATE, EntityLevel.LOCAL_ELEMENT, None),
-    "unit_state": (GateFamily.STATE, EntityLevel.STRUCTURAL_UNIT, None),
-    "residue_to_local": (GateFamily.RELAY, EntityLevel.RESIDUE, None),
-    "local_to_unit": (GateFamily.RELAY, EntityLevel.LOCAL_ELEMENT, None),
+    "local_unit_state": (GateFamily.STATE, EntityLevel.LOCAL_STRUCTURAL_UNIT, None),
+    "interface_state": (GateFamily.STATE, EntityLevel.INTERFACE, None),
+    "global_unit_state": (GateFamily.STATE, EntityLevel.GLOBAL_STRUCTURAL_UNIT, None),
+    "residue_to_local_unit": (GateFamily.RELAY, EntityLevel.RESIDUE, None),
+    "local_unit_to_global_unit": (
+        GateFamily.RELAY,
+        EntityLevel.LOCAL_STRUCTURAL_UNIT,
+        None,
+    ),
+    "interface_to_global_unit": (GateFamily.RELAY, EntityLevel.INTERFACE, None),
     "residue_edges": (GateFamily.CONTACT, EntityLevel.CONTACT, EntityLevel.RESIDUE),
-    "local_edges": (GateFamily.CONTACT, EntityLevel.CONTACT, EntityLevel.LOCAL_ELEMENT),
-    "unit_contact_edges": (
+    "local_unit_edges": (
         GateFamily.CONTACT,
         EntityLevel.CONTACT,
-        EntityLevel.STRUCTURAL_UNIT,
+        EntityLevel.LOCAL_STRUCTURAL_UNIT,
+    ),
+    "interface_edges": (
+        GateFamily.CONTACT,
+        EntityLevel.CONTACT,
+        EntityLevel.LOCAL_STRUCTURAL_UNIT,
     ),
 }
 

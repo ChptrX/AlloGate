@@ -7,7 +7,9 @@ from allogate.gates.registry import GateRegistry
 def entities():
     residue_a = EntityRef("example", EntityLevel.RESIDUE, "chain-a-residue-0001")
     residue_b = EntityRef("example", EntityLevel.RESIDUE, "chain-a-residue-0002")
-    local = EntityRef("example", EntityLevel.LOCAL_ELEMENT, "local-0001")
+    local = EntityRef(
+        "example", EntityLevel.LOCAL_STRUCTURAL_UNIT, "local-unit-0001"
+    )
     contact = EntityRef("example", EntityLevel.CONTACT, "contact-0001-0002")
     return residue_a, residue_b, local, contact
 
@@ -72,4 +74,3 @@ def test_non_one_default_is_rejected() -> None:
             provenance_nodes=(residue_a.uid,),
             default=0.5,
         )
-

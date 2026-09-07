@@ -2,83 +2,95 @@
 
 ## Semantic identities
 
-An `EntityRef` identifies one scientific object by:
+An `EntityRef` identifies one scientific object by a public namespace, an entity
+level, and a stable semantic key. Supported levels are residue, contact, local
+structural unit, interface, global structural unit, relation, and readout.
 
-- a public namespace;
-- an entity level;
-- a stable semantic key.
-
-Supported levels are residue, contact, local element, interface, structural unit, relation, and readout. Keys are public tokens rather than topology-array positions, tensor offsets, filenames, or paths.
+Keys are public semantic tokens rather than topology-array positions, batch
+offsets, filenames, host paths, or display labels.
 
 ## Gate families
 
 ### State Gate
 
-A State Gate controls information stored at one entity. Closing the Gate replaces scalar channels with a frozen calibrated feature baseline and sets equivariant vector channels to zero:
+A State Gate controls information stored at one entity:
 
 ```text
-state(g) = baseline + g * (state - baseline)
+scalar(g) = baseline + g * (state - baseline)
 vector(g) = g * vector
 ```
 
-Feature baselines are distinct from the invariant no-intervention kinetic target used by later analysis stages.
+Scalar baselines are frozen, identity-specific training statistics. Vector
+baselines are zero. Feature baselines are distinct from the fixed kinetic
+reference used after CV training.
 
 ### Relay Gate
 
-A Relay Gate controls information transmitted from an entity into the next hierarchy operation. It multiplies the message or pooled contribution, while the denominator remains fixed at its all-one value.
+A Relay Gate controls information transmitted into the next hierarchy
+operation. It multiplies a child, interface, or readout contribution while the
+denominator remains fixed at its all-one value.
 
 ### Contact Gate
 
-A Contact Gate controls one undirected pair of distinct entities. Endpoint order is canonicalized, so `(left, right)` and `(right, left)` produce the same Gate UID. Runtime directed edges may bind the same canonical UID more than once.
+A Contact Gate controls one unordered pair of distinct entities. Endpoint order
+is canonicalized. Both directed runtime edges bind to the same semantic Gate
+UID.
 
-## Canonical UID
+## Canonical UIDs
 
-A Gate UID is derived from:
-
-- schema version;
-- public namespace;
-- Gate family;
-- canonical entity target UID or contact endpoint UIDs;
-- relation name;
-- intervention semantics.
-
-It does not include:
+A Gate UID is derived from its schema, public namespace, family, canonical
+targets, relation name, and intervention semantics. It does not include:
 
 - tensor index or batch position;
-- training fold or checkpoint;
+- training split, fold, or checkpoint;
 - display name or alias;
-- local paths, host information, or runtime device;
+- local path, host, or device;
 - intervention dose.
 
-The UID therefore remains stable if a Registry is constructed in a different order or if display labels change.
+Registry construction order and display-label changes therefore cannot change a
+Gate UID.
 
-## Registry and tensor layout
+## Runtime control bindings
 
-`GateRegistry` verifies unique UIDs and aliases and orders Gates by a fixed family/level/UID contract. The global `GateTensorLayout` is derived from that order and contains contiguous global and group-local indices.
+`ModelGateBinding` maps global Registry values to repeated runtime tensors. The
+public encoder exposes these formal controls:
 
-The immutable no-intervention vector is all ones. A non-one value must be supplied explicitly as an intervention.
+| Model operation | Gate family | Semantic level |
+|---|---|---|
+| residue/local/interface/global state | State | corresponding node level |
+| residue -> local unit | Relay | residue |
+| local unit -> global unit | Relay | local structural unit |
+| interface -> global endpoints | Relay | interface |
+| residue or local-unit geometric edge | Contact | endpoint level |
+| interface-member edge | Contact | local structural unit endpoints |
 
-Runtime graph batches use `ModelGateBinding` to align semantic Gate UIDs with flattened model tensors. Repeated UIDs are expected when the same semantic entity occurs in multiple trajectories in one batch. Runtime alignment is separate from Registry identity and therefore cannot alter a Gate UID.
+The immutable no-intervention vector is all ones. Every non-one value must be
+requested explicitly.
 
 ## Provenance DAG
 
-The provenance graph stores entities as nodes and explicit relations such as:
+The explicit acyclic provenance graph contains relationships such as:
 
 ```text
-residue → local element → structural unit → readout
-residue → contact → local element/interface → relation/readout
+residue -> local structural unit -> global structural unit -> Direct readout
+local-unit contact -> interface -> global structural unit -> Interface Route
+global covalent relation -> Covalent Route
 ```
 
-Every edge must reference known nodes. Duplicate nodes, duplicate edges, self-loops, and cycles are rejected. A Registry passes provenance qualification only when every Gate references existing provenance nodes.
+Duplicate nodes, duplicate edges, self-loops, unknown endpoints, and cycles are
+rejected. A Registry passes provenance qualification only when every Gate
+references an existing provenance node.
 
-Parent-child relationships represent lineage, not independent evidence. Downstream analysis must avoid counting a child effect and its aggregate parent as two independent observations.
+Parent-child relationships encode lineage, not independent observations.
+Downstream statistics must not count a local effect and its aggregate global
+effect as independent evidence.
 
-## Frozen insertion points in the current encoder
+## Frozen insertion points
 
-- Residue State is applied after residue message passing and before residue relay.
-- Local-element State is applied after local message passing and before structural-unit relay.
-- Structural-unit relation messages and Route outputs are computed before structural-unit State replacement.
-- Structural-unit State therefore affects Direct stored-state readout but does not retroactively change relation-specific Route messages.
-
-Interface entities and Gates are supported by the Registry and provenance schemas. Their neural insertion point remains deferred until a public dynamic-interface encoder is introduced.
-
+- Residue State follows residue message passing.
+- Local Structural Unit State follows local-unit message passing.
+- Interface State follows contact-group aggregation and precedes interface
+  relay to both global endpoints.
+- Global relation messages and Route outputs are computed before Global
+  Structural Unit State replacement.
+- Relay closure never triggers post-intervention degree renormalization.

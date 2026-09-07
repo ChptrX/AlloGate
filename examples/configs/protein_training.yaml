@@ -1,0 +1,55 @@
+schema_version: allogate.training_experiment.v1
+
+method:
+  schema_version: allogate.method.v2
+  representation:
+    contact_on_angstrom: 8.0
+    contact_off_angstrom: 10.0
+    radial_basis_count: 16
+    radial_basis_max_angstrom: 20.0
+  hierarchy:
+    target_local_structural_unit_size: 6
+    minimum_local_structural_unit_size: 4
+    maximum_local_structural_unit_size: 8
+    respect_chain_boundaries: true
+    respect_global_structural_unit_boundaries: true
+  encoder:
+    residue_input_scalar_channels: 3
+    residue_input_vector_channels: 2
+    edge_scalar_channels: 2
+    edge_vector_channels: 1
+    hidden_scalar_channels: 64
+    hidden_vector_channels: 16
+    message_layers_per_scale: 2
+  readout:
+    projection_channels: 64
+    hidden_channels: 64
+  collective_variable_dimension: 2
+
+objective:
+  lag_time: 10.0
+  lag_unit: ns
+  covariance_regularization: 1.0e-4
+  interface_route_weight: 1.0
+  direct_weight: 0.1
+  alignment_weight: 0.05
+  standard_deviation_floor: 0.5
+  standard_deviation_weight: 0.03
+  decorrelation_weight: 0.02
+  trajectory_centered_weight: 0.25
+
+optimization:
+  seed: 2026
+  epochs: 100
+  batch_size: 128
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  gradient_clip_norm: 1.0
+  minimum_epochs: 10
+  early_stopping_patience: 15
+  early_stopping_min_delta: 1.0e-4
+  learning_rate_patience: 5
+  learning_rate_factor: 0.5
+  minimum_learning_rate: 1.0e-6
+  dtype: float32
+  deterministic_algorithms: true
