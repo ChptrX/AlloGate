@@ -4,15 +4,24 @@
 [![Public content audit](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml)
 [![Package smoke test](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml)
 
-> **Status: trainable public alpha.** The protein-independent model, configurable
-> slow-CV training objective, Gate evaluation layer, and synthetic reference
-> workflows are implemented. Raw trajectory readers and kinetic-reference fitting
-> remain separate adapters/workflows.
+Which residues and contacts influence whether a protein reaches one conformation
+before another? AlloGate studies this question using molecular dynamics
+trajectories. It learns coordinates that capture slow changes in protein
+structure, then tests how the prediction for a chosen transition changes when
+the model receives less information from a particular residue or contact.
 
-AlloGate learns descriptor-free slow collective variables from molecular-dynamics
-graphs and audits how structural information influences a frozen kinetic target.
-The public package contains no protein-specific residue ranges, trajectory paths,
-checkpoints, or server assumptions.
+For example, suppose you want to study the transition between an open and a
+closed state. You can supply a reference that estimates the probability of
+reaching the closed state first. With the trained model and reference held
+fixed, weaken one contact in the model and compare that probability with its
+original value. The size and direction of the shift help you choose contacts
+to test experimentally.
+
+**Getting started.** This alpha release includes the model, trainer, and two
+worked examples with synthetic data. Start with [slow-coordinate training](examples/synthetic_training.py)
+or [gate evaluation](examples/synthetic_gate_audit.py). For your own protein,
+prepare [time-lagged graph pairs](docs/data-contract.md) and fit a
+[kinetic reference](docs/kinetic-reference.md) for the transition you want to study.
 
 ## Protein-independent hierarchy
 
@@ -92,18 +101,19 @@ manifest binding the experiment, initial model, and trained model digests.
 
 ## Gate evaluation
 
-The public evaluation layer provides canonical State, Relay, and Contact Gate
-identities; fixed-denominator interventions; exact Jacobians and named Hessian
-blocks; deterministic dose schedules; and content-addressed results.
+A gate controls how much of one contribution the model uses. A **State Gate**
+changes the features stored at a site. A **Relay Gate** scales the information
+a structural unit passes on. A **Contact Gate** scales the contribution from
+one contact. The [evaluation guide](docs/evaluation-contract.md) describes how
+to vary gate strength and measure the response.
 
 ```text
 python examples/synthetic_gate_audit.py
 ```
 
-Closing a Gate removes model information without renormalizing surviving
-neighbors. A Gate response measures dependence inside the trained model; it is
-not equivalent to a physical mutation and does not by itself establish molecular
-causality.
+Closing a gate leaves the weights of neighboring contributions unchanged.
+The response tells you how much the prediction depends on that information.
+Whether a mutation or ligand has the same effect requires a separate test.
 
 ## Scientific basis and reproducibility
 
