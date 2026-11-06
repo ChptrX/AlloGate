@@ -3,7 +3,6 @@
 **English** · [简体中文](README.zh-CN.md)
 
 [![Tests](https://github.com/ChptrX/AlloGate/actions/workflows/test.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/test.yml)
-[![Public content audit](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml)
 [![Package smoke test](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml)
 
 Which residues and contacts influence whether a protein reaches one conformation
@@ -66,8 +65,7 @@ neural functionality.
 
 ## Configurable training
 
-Every model, objective, and optimizer parameter is represented in a strict,
-path-free experiment configuration. Start from
+Every model, objective, and optimizer parameter is represented in a single experiment configuration. Start from
 `examples/configs/protein_training.yaml` and change the hierarchy, channel
 dimensions, lag, loss weights, optimizer, batch size, stopping policy, or dtype.
 Unknown keys fail rather than being silently ignored.
@@ -98,8 +96,7 @@ Run the deterministic synthetic training workflow:
 python examples/synthetic_training.py --output synthetic-training-run
 ```
 
-The run writes an immutable best checkpoint, epoch history, and a path-free run
-manifest binding the experiment, initial model, and trained model digests.
+The training run saves the best checkpoint and the training history.
 
 ## Gate evaluation
 
@@ -117,31 +114,10 @@ Closing a gate leaves the weights of neighboring contributions unchanged.
 The response tells you how much the prediction depends on that information.
 Whether a mutation or ligand has the same effect requires a separate test.
 
-## Scientific basis and reproducibility
+## Scientific basis
 
 The geometric encoder follows the scalar/vector constraints of geometric vector
 perceptrons. Descriptor-free GNN collective variables and the DeepTICA-style
 slow-mode objective follow the public methodology described by Zhang et al.,
 *J. Chem. Theory Comput.* 20, 10787-10797 (2024),
 <https://doi.org/10.1021/acs.jctc.4c01197>.
-
-For a shareable result, retain:
-
-- the trajectory and lag-pair manifests;
-- the experiment configuration and its digest;
-- initial and trained model digests;
-- the split policy and random seed;
-- the Gate Registry, layout, kinetic-reference, and no-intervention digests;
-- software version, environment lock file, and raw-data checksums.
-
-Implementation lineage is recorded in `THIRD_PARTY_NOTICES.md` and
-`docs/provenance-ledger.csv`. Release and paper-code checks are listed in
-`docs/release-checklist.md`; user-visible API changes are recorded in
-`CHANGELOG.md`.
-
-## Public-data boundary
-
-This repository intentionally excludes study structures, trajectories,
-checkpoints, absolute host paths, scheduler configuration, legacy source
-bundles, and unpublished residue identities. Only synthetic or explicitly
-redistributable examples should be committed.

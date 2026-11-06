@@ -3,7 +3,6 @@
 [English](README.md) · **简体中文**
 
 [![测试](https://github.com/ChptrX/AlloGate/actions/workflows/test.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/test.yml)
-[![公开内容检查](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/privacy.yml)
 [![软件包基本功能测试](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml/badge.svg)](https://github.com/ChptrX/AlloGate/actions/workflows/package.yml)
 
 从同一个构象出发，蛋白质会先到达开放态还是闭合态？哪些残基和接触会影响这一几率？AlloGate 用分子动力学轨迹研究这类问题。它先从轨迹中学习能够描述蛋白质缓慢构象变化的集体变量（CV），再在模型中减弱某个残基或接触提供的信息，观察对指定构象转变的预测如何变化。
@@ -44,7 +43,7 @@ python -m pytest
 
 ## 配置与训练
 
-模型、训练目标和优化器的参数都由实验配置指定，配置本身不依赖本机路径。可以从 `examples/configs/protein_training.yaml` 入手，调整结构层级、通道维度、滞后时间、损失权重、优化器、批大小、停止条件和数据类型。配置中出现未定义的字段时，程序会报错。
+模型、训练目标和优化器的参数都由实验配置指定。可以从 `examples/configs/protein_training.yaml` 入手，调整结构层级、通道维度、滞后时间、损失权重、优化器、批大小、停止条件和数据类型。配置中出现未定义的字段时，程序会报错。
 
 训练接口接受按时间滞后配对的图，每个图的大小可以不同。可用 MDAnalysis、MDTraj、已有的预处理流程或自定义适配器读取轨迹，再把图数据交给训练器。
 
@@ -67,7 +66,7 @@ result = trainer.fit(train_loader, validation_loader, output_directory="run")
 python examples/synthetic_training.py --output synthetic-training-run
 ```
 
-运行结束后，程序会保存不可覆写的最佳模型检查点、逐轮训练记录，以及一份不含本机路径的运行清单。清单通过哈希值将实验配置、初始模型和训练后的模型关联起来。
+训练结束后，程序会保存最佳模型检查点和逐轮训练记录。
 
 ## 门控扰动评估
 
@@ -85,21 +84,6 @@ python examples/synthetic_gate_audit.py
 
 关闭一个门时，相邻项仍沿用原先的权重。因此，响应反映的是模型的预测在多大程度上依赖这部分信息。实际突变或配体结合能否产生同样的效应，需要另行验证。
 
-## 方法依据与结果复现
+## 方法依据
 
 几何编码器遵循几何向量感知机（GVP）对标量和向量特征的变换约束。用图神经网络学习集体变量时无需手工指定描述符，慢模态学习采用 DeepTICA 风格的目标函数。这两部分参考了 Zhang 等人发表的方法（*J. Chem. Theory Comput.* **20**, 10787–10797, 2024）。[原文 DOI](https://doi.org/10.1021/acs.jctc.4c01197)
-
-为便于他人复现结果，请保留以下记录。
-
-- 轨迹清单，以及按滞后时间配对的样本清单
-- 实验配置及其哈希值
-- 初始模型和训练后模型的哈希值
-- 数据集划分策略和随机种子
-- 门控注册表、门控布局、动力学参照和无干预基线各自的哈希值
-- 软件版本、依赖环境锁定文件和原始数据校验和
-
-各项实现的来源见[第三方声明](THIRD_PARTY_NOTICES.md)和[来源记录](docs/provenance-ledger.csv)。发布软件及论文配套代码时的检查项目见[发布清单](docs/release-checklist.md)。对用户有影响的 API 变更见[更新日志](CHANGELOG.md)。
-
-## 公开数据范围
-
-本仓库不收录具体研究使用的结构、轨迹和模型检查点，也不收录本机绝对路径、作业调度配置、旧版源码包或尚未公开的残基信息。提交示例时，请使用合成数据或已获得明确再分发许可的数据。
